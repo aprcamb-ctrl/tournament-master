@@ -266,8 +266,7 @@ select:focus {
 }
 
 .fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-  opacity: 0; /* Starts hidden until animation plays */
+  animation: fadeInUp 0.5s ease-out both;
 }
 
 /* Neon Glows on Match Cards */
