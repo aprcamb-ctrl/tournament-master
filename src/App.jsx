@@ -70,7 +70,7 @@ function App() {
           setData(payload.new.data);
           setLastUpdated(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
           // Set initial category if not set
-          const cats = Object.keys(payload.new.data.categories || {});
+          const cats = Object.keys(payload.new.data.categories || {}).sort((a, b) => a.localeCompare(b));
           if (cats.length > 0 && !cats.includes(selectedCategory)) {
             setSelectedCategory(cats[0]);
           }
@@ -93,7 +93,7 @@ function App() {
         
       if (row && row.data) {
         setData(row.data);
-        const cats = Object.keys(row.data.categories || {});
+        const cats = Object.keys(row.data.categories || {}).sort((a, b) => a.localeCompare(b));
         if (cats.length > 0) {
           setSelectedCategory(cats[0]);
         }
@@ -146,7 +146,7 @@ function App() {
             value={selectedCategory} 
             onChange={e => setSelectedCategory(e.target.value)}
           >
-            {Object.keys(data.categories).map(cat => (
+            {Object.keys(data.categories).sort((a, b) => a.localeCompare(b)).map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
