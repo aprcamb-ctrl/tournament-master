@@ -179,7 +179,7 @@ function App() {
         {activeTab === 'fixtures' && (
           <div className="fixtures-list">
             {catData.matches.length > 0 ? [...catData.matches].reverse().map((m, i) => (
-              <div className={`match-card ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i}>
+              <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`}}>
                 <div className="match-teams">
                   <div className="team left">
                     <div className="team-icon"><CrossedPaddlesIcon size={42} /></div>
@@ -248,7 +248,7 @@ function App() {
         {activeTab === 'knockouts' && (
           <div className="knockouts-list">
             {catData.knockouts && catData.knockouts.length > 0 ? catData.knockouts.map((m, i) => (
-              <div className={`match-card ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i}>
+              <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`}}>
                 <div className="match-teams">
                   <div className="team left">
                     <div className="team-icon"><CrossedPaddlesIcon size={42} /></div>
