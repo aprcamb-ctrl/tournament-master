@@ -76,22 +76,8 @@ function App() {
       .channel('public:tournament_state')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_state' }, payload => {
         if (payload.new && payload.new.data) {
-          const newData = payload.new.data;
-          setData(newData);
+          setData(payload.new.data);
           setLastUpdated(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-          
-          const tournaments = getTournamentsList(newData);
-          if (tournaments.length > 0) {
-            // Keep current tournament if it exists, otherwise pick first
-            const newSelectedTournament = tournaments.includes(selectedTournament) ? selectedTournament : tournaments[0];
-            setSelectedTournament(newSelectedTournament);
-            
-            // Set initial category for the active tournament
-            const cats = Object.keys(newData.tournaments[newSelectedTournament]?.categories || {}).sort((a, b) => a.localeCompare(b));
-            if (cats.length > 0 && !cats.includes(selectedCategory)) {
-              setSelectedCategory(cats[0]);
-            }
-          }
         }
       })
       .subscribe();
@@ -99,7 +85,7 @@ function App() {
     return () => {
       supabase.removeChannel(subscription);
     }
-  }, [selectedTournament, selectedCategory]);
+  }, []);
 
   const fetchTournamentState = async () => {
     try {
@@ -110,19 +96,7 @@ function App() {
         .single();
         
       if (row && row.data) {
-        const newData = row.data;
-        setData(newData);
-        
-        const tournaments = getTournamentsList(newData);
-        if (tournaments.length > 0) {
-          const defaultTournament = tournaments[0];
-          setSelectedTournament(defaultTournament);
-          
-          const cats = Object.keys(newData.tournaments[defaultTournament]?.categories || {}).sort((a, b) => a.localeCompare(b));
-          if (cats.length > 0) {
-            setSelectedCategory(cats[0]);
-          }
-        }
+        setData(row.data);
       }
     } catch (err) {
       console.log('Using dummy data or failed to fetch:', err);
@@ -131,15 +105,22 @@ function App() {
     }
   };
 
-  // Switch category when tournament changes
+  // Ensure selected tournament and category are valid when data or selections change
   useEffect(() => {
-    if (data?.tournaments?.[selectedTournament]) {
-      const cats = Object.keys(data.tournaments[selectedTournament].categories || {}).sort((a, b) => a.localeCompare(b));
-      if (cats.length > 0 && !cats.includes(selectedCategory)) {
-        setSelectedCategory(cats[0]);
+    const tournaments = getTournamentsList(data);
+    if (tournaments.length > 0) {
+      if (!selectedTournament || !tournaments.includes(selectedTournament)) {
+        // Tournament was deleted or not set, fallback to first
+        setSelectedTournament(tournaments[0]);
+      } else {
+        // Tournament is valid, now check if category is valid for this tournament
+        const cats = Object.keys(data.tournaments[selectedTournament]?.categories || {}).sort((a, b) => a.localeCompare(b));
+        if (cats.length > 0 && (!selectedCategory || !cats.includes(selectedCategory))) {
+          setSelectedCategory(cats[0]);
+        }
       }
     }
-  }, [selectedTournament]);
+  }, [data, selectedTournament, selectedCategory]);
 
   const activeTournamentData = data?.tournaments?.[selectedTournament] || { categories: {} };
   const catData = activeTournamentData.categories?.[selectedCategory] || { matches: [], standings: [], knockouts: [] };
