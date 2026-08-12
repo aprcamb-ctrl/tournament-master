@@ -25,29 +25,32 @@ const CrossedPaddlesIcon = ({ size = 42, className = "" }) => (
 
 // Dummy Data (before Supabase integration)
 const DUMMY_DATA = {
-  tournament_name: "Exeter Grand Slam 2026",
-  categories: {
-    "Men's 18+ 3.0 (4)": {
-      standings: [
-        { team: "Sam Heys / Alan Barnsley", p: 3, w: 3, l: 0, pd: 16 },
-        { team: "Dave Pullen / Anthony Coe", p: 3, w: 1, l: 2, pd: 5 },
-        { team: "Alex Yapp / Christopher Eastwood", p: 3, w: 1, l: 2, pd: -5 },
-        { team: "Jack Ballard Ridley / Abhishek Bongirwar", p: 3, w: 1, l: 2, pd: -16 },
-      ],
-      matches: [
-        { label: "Round 1", team_a: "Alex Yapp / Christopher Eastwood", score_a: 15, score_b: 8, team_b: "Dave Pullen / Anthony Coe", time: "Court 14 • 10:30" },
-        { label: "Round 1", team_a: "Sam Heys / Alan Barnsley", score_a: 15, score_b: 13, team_b: "Dave Pullen / Anthony Coe", time: "Court 14 • 11:00" },
-        { label: "Round 2", team_a: "Sam Heys / Alan Barnsley", score_a: 15, score_b: 6, team_b: "Jack Ballard Ridley / Abhishek Bongirwar", time: "Court 14 • 11:30" },
-        { label: "Round 2", team_a: "Alex Yapp / Christopher Eastwood", score_a: 8, score_b: 15, team_b: "Jack Ballard Ridley / Abhishek Bongirwar", time: "Court 14 • 12:00" },
-      ],
-      knockouts: [
-        { label: "Finals", team_a: "Sam Heys / Alan Barnsley", score_a: 15, score_b: 10, team_b: "Dave Pullen / Anthony Coe", time: "Court 1 • 14:00" }
-      ]
-    },
-    "Women's Open Pro (6)": {
-      standings: [],
-      matches: [],
-      knockouts: []
+  tournaments: {
+    "Exeter Grand Slam 2026": {
+      categories: {
+        "Men's 18+ 3.0 (4)": {
+          standings: [
+            { team: "Sam Heys / Alan Barnsley", p: 3, w: 3, l: 0, pd: 16 },
+            { team: "Dave Pullen / Anthony Coe", p: 3, w: 1, l: 2, pd: 5 },
+            { team: "Alex Yapp / Christopher Eastwood", p: 3, w: 1, l: 2, pd: -5 },
+            { team: "Jack Ballard Ridley / Abhishek Bongirwar", p: 3, w: 1, l: 2, pd: -16 },
+          ],
+          matches: [
+            { label: "Round 1", team_a: "Alex Yapp / Christopher Eastwood", score_a: 15, score_b: 8, team_b: "Dave Pullen / Anthony Coe", time: "Court 14 • 10:30" },
+            { label: "Round 1", team_a: "Sam Heys / Alan Barnsley", score_a: 15, score_b: 13, team_b: "Dave Pullen / Anthony Coe", time: "Court 14 • 11:00" },
+            { label: "Round 2", team_a: "Sam Heys / Alan Barnsley", score_a: 15, score_b: 6, team_b: "Jack Ballard Ridley / Abhishek Bongirwar", time: "Court 14 • 11:30" },
+            { label: "Round 2", team_a: "Alex Yapp / Christopher Eastwood", score_a: 8, score_b: 15, team_b: "Jack Ballard Ridley / Abhishek Bongirwar", time: "Court 14 • 12:00" },
+          ],
+          knockouts: [
+            { label: "Finals", team_a: "Sam Heys / Alan Barnsley", score_a: 15, score_b: 10, team_b: "Dave Pullen / Anthony Coe", time: "Court 1 • 14:00" }
+          ]
+        },
+        "Women's Open Pro (6)": {
+          standings: [],
+          matches: [],
+          knockouts: []
+        }
+      }
     }
   }
 }
@@ -55,9 +58,15 @@ const DUMMY_DATA = {
 function App() {
   const [data, setData] = useState(DUMMY_DATA);
   const [activeTab, setActiveTab] = useState('fixtures'); // fixtures, standings, knockouts
-  const [selectedCategory, setSelectedCategory] = useState(Object.keys(DUMMY_DATA.categories)[0]);
+  const [selectedTournament, setSelectedTournament] = useState(Object.keys(DUMMY_DATA.tournaments)[0]);
+  const [selectedCategory, setSelectedCategory] = useState(Object.keys(DUMMY_DATA.tournaments[Object.keys(DUMMY_DATA.tournaments)[0]].categories)[0]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+
+  // Helper to safely extract available tournaments
+  const getTournamentsList = (sourceData) => {
+    return Object.keys(sourceData?.tournaments || {}).sort((a, b) => a.localeCompare(b));
+  };
 
   useEffect(() => {
     fetchTournamentState();
@@ -67,12 +76,21 @@ function App() {
       .channel('public:tournament_state')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_state' }, payload => {
         if (payload.new && payload.new.data) {
-          setData(payload.new.data);
+          const newData = payload.new.data;
+          setData(newData);
           setLastUpdated(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-          // Set initial category if not set
-          const cats = Object.keys(payload.new.data.categories || {}).sort((a, b) => a.localeCompare(b));
-          if (cats.length > 0 && !cats.includes(selectedCategory)) {
-            setSelectedCategory(cats[0]);
+          
+          const tournaments = getTournamentsList(newData);
+          if (tournaments.length > 0) {
+            // Keep current tournament if it exists, otherwise pick first
+            const newSelectedTournament = tournaments.includes(selectedTournament) ? selectedTournament : tournaments[0];
+            setSelectedTournament(newSelectedTournament);
+            
+            // Set initial category for the active tournament
+            const cats = Object.keys(newData.tournaments[newSelectedTournament]?.categories || {}).sort((a, b) => a.localeCompare(b));
+            if (cats.length > 0 && !cats.includes(selectedCategory)) {
+              setSelectedCategory(cats[0]);
+            }
           }
         }
       })
@@ -81,7 +99,7 @@ function App() {
     return () => {
       supabase.removeChannel(subscription);
     }
-  }, []);
+  }, [selectedTournament, selectedCategory]);
 
   const fetchTournamentState = async () => {
     try {
@@ -92,10 +110,18 @@ function App() {
         .single();
         
       if (row && row.data) {
-        setData(row.data);
-        const cats = Object.keys(row.data.categories || {}).sort((a, b) => a.localeCompare(b));
-        if (cats.length > 0) {
-          setSelectedCategory(cats[0]);
+        const newData = row.data;
+        setData(newData);
+        
+        const tournaments = getTournamentsList(newData);
+        if (tournaments.length > 0) {
+          const defaultTournament = tournaments[0];
+          setSelectedTournament(defaultTournament);
+          
+          const cats = Object.keys(newData.tournaments[defaultTournament]?.categories || {}).sort((a, b) => a.localeCompare(b));
+          if (cats.length > 0) {
+            setSelectedCategory(cats[0]);
+          }
         }
       }
     } catch (err) {
@@ -105,10 +131,22 @@ function App() {
     }
   };
 
-  const catData = data.categories?.[selectedCategory] || { matches: [], standings: [], knockouts: [] };
+  // Switch category when tournament changes
+  useEffect(() => {
+    if (data?.tournaments?.[selectedTournament]) {
+      const cats = Object.keys(data.tournaments[selectedTournament].categories || {}).sort((a, b) => a.localeCompare(b));
+      if (cats.length > 0 && !cats.includes(selectedCategory)) {
+        setSelectedCategory(cats[0]);
+      }
+    }
+  }, [selectedTournament]);
+
+  const activeTournamentData = data?.tournaments?.[selectedTournament] || { categories: {} };
+  const catData = activeTournamentData.categories?.[selectedCategory] || { matches: [], standings: [], knockouts: [] };
 
   // Parse title to highlight parts if possible
-  const splitTitle = data.tournament_name.split(' ');
+  const currentTitle = selectedTournament || "Tournament Master";
+  const splitTitle = currentTitle.split(' ');
   const titleStart = splitTitle.slice(0, Math.ceil(splitTitle.length/2)).join(' ');
   const titleEnd = splitTitle.slice(Math.ceil(splitTitle.length/2)).join(' ');
 
@@ -140,13 +178,26 @@ function App() {
       </div>
 
       <div className="card" style={{padding: '15px 20px', marginBottom: '25px'}}>
+        <div className="card-label">SELECT EVENT</div>
+        <div className="select-wrapper" style={{marginBottom: '20px'}}>
+          <select 
+            value={selectedTournament} 
+            onChange={e => setSelectedTournament(e.target.value)}
+          >
+            {getTournamentsList(data).map(tourn => (
+              <option key={tourn} value={tourn}>{tourn}</option>
+            ))}
+          </select>
+          <div className="select-arrow">▼</div>
+        </div>
+
         <div className="card-label">SELECT CATEGORY</div>
         <div className="select-wrapper">
           <select 
             value={selectedCategory} 
             onChange={e => setSelectedCategory(e.target.value)}
           >
-            {Object.keys(data.categories).sort((a, b) => a.localeCompare(b)).map(cat => (
+            {Object.keys(activeTournamentData.categories).sort((a, b) => a.localeCompare(b)).map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
