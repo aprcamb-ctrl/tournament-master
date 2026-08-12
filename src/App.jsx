@@ -26,7 +26,7 @@ const CrossedPaddlesIcon = ({ size = 42, className = "" }) => (
 // Dummy Data (before Supabase integration)
 const DUMMY_DATA = {
   tournaments: {
-    "Exeter Grand Slam 2026": {
+    "Tournament Data Loading...": {
       categories: {
         "Men's 18+ 3.0 (4)": {
           standings: [
