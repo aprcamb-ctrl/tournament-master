@@ -412,7 +412,97 @@ select:focus {
   letter-spacing: 2px;
   text-transform: uppercase;
   display: flex;
-  align-items: center;
   justify-content: center;
   gap: 10px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .header-wrapper {
+    flex-direction: column;
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  .logo-container {
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .logo-text-2 {
+    margin-left: 0;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .subtitle {
+    font-size: 0.65rem;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .live-indicator {
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  /* Stack Tabs */
+  .tabs {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tab {
+    padding: 12px 0;
+  }
+
+  /* Stack Match Cards */
+  .match-teams {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .team, .team.right {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  /* Hide icons on mobile to match the cleaner layout reference */
+  .team-icon {
+    display: none;
+  }
+
+  .team-name {
+    max-width: 100%;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .team-score {
+    font-size: 3rem;
+  }
+
+  .vs {
+    margin: 10px 0;
+    padding: 8px 12px;
+  }
+
+  /* Optimize Standings Table for Portrait */
+  .card {
+    padding: 15px 10px;
+    overflow-x: auto;
+  }
+  
+  .standings-table th, 
+  .standings-table td {
+    padding: 12px 4px;
+    font-size: 0.85rem;
+  }
+  
+  .standings-table th:nth-child(2),
+  .standings-table td:nth-child(2) {
+    max-width: 130px;
+    word-break: break-word;
+  }
 }
