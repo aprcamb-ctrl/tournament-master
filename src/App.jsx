@@ -269,7 +269,23 @@ function App() {
             // Only show keys that have actual data across the group, excluding the groupKey if it exists
             return Object.keys(groups).map((gName, idx) => {
                const groupEntries = groups[gName];
-               const displayKeys = keys.filter(k => k !== groupKey);
+               let displayKeys = keys.filter(k => k !== groupKey);
+               
+               // The user wants to ensure the columns shown are Name, DUPR Rating, Home Club
+               // We will try to filter them if they exist
+               const desiredColumns = [];
+               const nameCol = displayKeys.find(k => k.toLowerCase() === 'name' || k.toLowerCase().includes('player'));
+               const ratingCol = displayKeys.find(k => k.toLowerCase().includes('dupr rating'));
+               const clubCol = displayKeys.find(k => k.toLowerCase().includes('home club') || k.toLowerCase().includes('club'));
+               
+               if (nameCol) desiredColumns.push(nameCol);
+               if (ratingCol) desiredColumns.push(ratingCol);
+               if (clubCol) desiredColumns.push(clubCol);
+               
+               if (desiredColumns.length > 0) {
+                 displayKeys = desiredColumns;
+               }
+               
                return (
                  <div key={idx} style={{marginBottom: '30px', background: 'rgba(30, 41, 59, 0.8)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)'}}>
                    <h3 style={{color: 'white', borderBottom: '1px solid #334155', paddingBottom: '10px', marginTop: 0}}>{gName}</h3>
