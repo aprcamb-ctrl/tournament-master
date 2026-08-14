@@ -447,7 +447,7 @@ function App() {
 
       <div className="content">
         {(activeTab === 'compass' || (activeTab === 'fixtures' && catData.format_type === 'compass')) && (
-          <div className="knockouts-list">
+          <div className="card knockouts-list">
             {catData.champions && catData.champions.length > 0 && (
               <div style={{marginBottom: '40px', background: 'rgba(163, 230, 53, 0.1)', border: '2px solid #a3e635', borderRadius: '12px', padding: '20px'}}>
                 <h2 style={{color: '#a3e635', textAlign: 'center', marginTop: 0, textTransform: 'uppercase', letterSpacing: '2px'}}>Tournament Champions</h2>
@@ -570,7 +570,7 @@ function App() {
         )}
 
         {activeTab === 'knockouts' && (
-          <div className="knockouts-list">
+          <div className="card knockouts-list">
             {catData.champions && catData.champions.length > 0 && (
               <div style={{marginBottom: '40px', background: 'rgba(163, 230, 53, 0.1)', border: '2px solid #a3e635', borderRadius: '12px', padding: '20px'}}>
                 <h2 style={{color: '#a3e635', textAlign: 'center', marginTop: 0, textTransform: 'uppercase', letterSpacing: '2px'}}>Tournament Champions</h2>
