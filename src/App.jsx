@@ -439,6 +439,20 @@ function App() {
       <div className="content">
         {(activeTab === 'compass' || (activeTab === 'fixtures' && catData.format_type === 'compass')) && (
           <div className="knockouts-list">
+            {catData.champions && catData.champions.length > 0 && (
+              <div style={{marginBottom: '40px', background: 'rgba(163, 230, 53, 0.1)', border: '2px solid #a3e635', borderRadius: '12px', padding: '20px'}}>
+                <h2 style={{color: '#a3e635', textAlign: 'center', marginTop: 0, textTransform: 'uppercase', letterSpacing: '2px'}}>Tournament Champions</h2>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center'}}>
+                  {catData.champions.map((champ, idx) => (
+                    <div key={idx} style={{background: 'rgba(0,0,0,0.5)', padding: '15px 20px', borderRadius: '8px', minWidth: '200px', textAlign: 'center', borderLeft: champ.dir === 'East' ? '4px solid #f59e0b' : '4px solid #38bdf8'}}>
+                      <div style={{color: champ.dir === 'East' ? '#f59e0b' : '#38bdf8', fontSize: '14px', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase'}}>{champ.dir === 'East' ? 'Overall Champions' : champ.dir + ' Champions'}</div>
+                      <div style={{color: 'white', fontSize: '18px', fontWeight: 'bold'}}>{champ.team}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {catData.compass && catData.compass.length > 0 ? (() => {
               const dirs = ["East", "West", "North", "South", "Northeast", "Northwest", "Southeast", "Southwest"];
               const grouped = {};
@@ -548,6 +562,20 @@ function App() {
 
         {activeTab === 'knockouts' && (
           <div className="knockouts-list">
+            {catData.champions && catData.champions.length > 0 && (
+              <div style={{marginBottom: '40px', background: 'rgba(163, 230, 53, 0.1)', border: '2px solid #a3e635', borderRadius: '12px', padding: '20px'}}>
+                <h2 style={{color: '#a3e635', textAlign: 'center', marginTop: 0, textTransform: 'uppercase', letterSpacing: '2px'}}>Tournament Champions</h2>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center'}}>
+                  {catData.champions.map((champ, idx) => (
+                    <div key={idx} style={{background: 'rgba(0,0,0,0.5)', padding: '15px 20px', borderRadius: '8px', minWidth: '200px', textAlign: 'center', borderLeft: champ.dir === 'East' ? '4px solid #f59e0b' : '4px solid #38bdf8'}}>
+                      <div style={{color: champ.dir === 'East' ? '#f59e0b' : '#38bdf8', fontSize: '14px', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase'}}>{champ.dir === 'East' ? 'Overall Champions' : champ.dir + ' Champions'}</div>
+                      <div style={{color: 'white', fontSize: '18px', fontWeight: 'bold'}}>{champ.team}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {catData.knockouts && catData.knockouts.length > 0 ? catData.knockouts.map((m, i) => (
               <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`}}>
                 <div className="match-teams">
