@@ -437,7 +437,47 @@ function App() {
       </div>
 
       <div className="content">
-        {activeTab === 'fixtures' && (
+        {(activeTab === 'compass' || (activeTab === 'fixtures' && catData.format_type === 'compass')) && (
+          <div className="knockouts-list">
+            {catData.compass && catData.compass.length > 0 ? (() => {
+              const dirs = ["East", "West", "North", "South", "Northeast", "Northwest", "Southeast", "Southwest"];
+              const grouped = {};
+              catData.compass.forEach(m => {
+                const d = m.compass_dir;
+                if (!grouped[d]) grouped[d] = [];
+                grouped[d].push(m);
+              });
+              
+              return dirs.filter(d => grouped[d]).map((d, dIdx) => (
+                <div key={dIdx} style={{marginBottom: '30px'}}>
+                  <h3 style={{color: '#a3e635', borderBottom: '1px solid #334155', paddingBottom: '10px'}}>{d === 'East' ? 'Main Draw (East)' : d + ' Draw'}</h3>
+                  {grouped[d].map((m, i) => (
+                    <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`, marginBottom: '15px'}}>
+                      <div className="match-teams">
+                        <div className="team left">
+                          <div className="team-icon"><CrossedPaddlesIcon size={42} /></div>
+                          <div className="team-name">{m.team_a.split(' / ').map((name, idx) => <div key={idx}>{name}{idx===0?' /':''}</div>)}</div>
+                          <div className="team-score">{m.score_a !== "" ? m.score_a : "-"}</div>
+                        </div>
+                        <div className="vs">VS</div>
+                        <div className="team right">
+                          <div className="team-icon"><CrossedPaddlesIcon size={42} /></div>
+                          <div className="team-name">{m.team_b.split(' / ').map((name, idx) => <div key={idx}>{name}{idx===0?' /':''}</div>)}</div>
+                          <div className="team-score">{m.score_b !== "" ? m.score_b : "-"}</div>
+                        </div>
+                      </div>
+                      <div className="match-footer">
+                        {m.round}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ));
+            })() : <p style={{textAlign: 'center', color: '#a1a1aa', padding: '40px'}}>No compass matches available yet.</p>}
+          </div>
+        )}
+
+        {activeTab === 'fixtures' && catData.format_type !== 'compass' && (
           <div className="fixtures-list">
             {catData.matches.length > 0 ? [...catData.matches].reverse().map((m, i) => (
               <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`}}>
