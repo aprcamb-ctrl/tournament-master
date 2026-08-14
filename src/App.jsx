@@ -160,7 +160,7 @@ function App() {
   return (
     <div className="container">
       <div className="header-wrapper">
-        <div className="logo-container" style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="logo-container" style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
           {mainView === 'events' ? (
             <button 
               onClick={() => setMainView('results')}
@@ -194,22 +194,25 @@ function App() {
           )}
         </div>
         
-        <header className="header">
-          <h1 className="title">{titleStart} <span>{titleEnd}</span></h1>
+        <header className="header" style={{ flex: 2, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <img src="/favicon.png" alt="Tournament Master" style={{ height: '70px', objectFit: 'contain', borderRadius: '15px', marginBottom: '10px' }} />
+          <h1 className="title" style={{ marginTop: 0 }}>{titleStart} <span>{titleEnd}</span></h1>
           <div className="subtitle">
             LIVE FIXTURES <span>•</span> STANDINGS <span>•</span> KNOCKOUTS
           </div>
         </header>
 
-        {isLive && (
-          <div className="live-indicator">
-            <div className="live-badge">
-              <div className="live-dot"></div>
-              LIVE
+        <div className="right-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '20px', flex: 1 }}>
+          {isLive && (
+            <div className="live-indicator" style={{ margin: 0 }}>
+              <div className="live-badge">
+                <div className="live-dot"></div>
+                LIVE
+              </div>
+              <div className="updated-text">UPDATED {lastUpdated}</div>
             </div>
-            <div className="updated-text">UPDATED {lastUpdated}</div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       
