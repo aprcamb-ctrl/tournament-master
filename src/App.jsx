@@ -57,6 +57,9 @@ const DUMMY_DATA = {
 
 function App() {
   const [data, setData] = useState(DUMMY_DATA);
+  const [mainView, setMainView] = useState('events');
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+
   const [activeTab, setActiveTab] = useState('fixtures'); // fixtures, standings, knockouts
   const [selectedTournament, setSelectedTournament] = useState(Object.keys(DUMMY_DATA.tournaments)[0]);
   const [selectedCategory, setSelectedCategory] = useState(Object.keys(DUMMY_DATA.tournaments[Object.keys(DUMMY_DATA.tournaments)[0]].categories)[0]);
@@ -70,14 +73,19 @@ function App() {
 
   useEffect(() => {
     fetchTournamentState();
+    fetchUpcomingEvents();
 
     // Subscribe to realtime changes
     const subscription = supabase
       .channel('public:tournament_state')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_state' }, payload => {
         if (payload.new && payload.new.data) {
-          setData(payload.new.data);
-          setLastUpdated(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+          if (payload.new.id === 1) {
+            setData(payload.new.data);
+            setLastUpdated(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+          } else if (payload.new.id === 2) {
+            setUpcomingEvents(payload.new.data.events || []);
+          }
         }
       })
       .subscribe();
@@ -86,6 +94,22 @@ function App() {
       supabase.removeChannel(subscription);
     }
   }, []);
+
+  const fetchUpcomingEvents = async () => {
+    try {
+      const { data: row, error } = await supabase
+        .from('tournament_state')
+        .select('*')
+        .eq('id', 2)
+        .single();
+        
+      if (row && row.data && row.data.events) {
+        setUpcomingEvents(row.data.events);
+      }
+    } catch (err) {
+      console.log('Failed to fetch events:', err);
+    }
+  };
 
   const fetchTournamentState = async () => {
     try {
@@ -134,12 +158,38 @@ function App() {
   return (
     <div className="container">
       <div className="header-wrapper">
-        <div className="logo-container">
-          <div className="logo-icon">
-            <CrossedPaddlesIcon size={28} />
-            <span className="logo-text-1">TOURNAMENT</span>
-          </div>
-          <span className="logo-text-2">MASTER</span>
+        <div className="logo-container" style={{ display: 'flex', alignItems: 'center' }}>
+          {mainView === 'events' ? (
+            <button 
+              onClick={() => setMainView('results')}
+              style={{ 
+                background: 'transparent',
+                color: 'white',
+                border: '1px solid #3b82f6',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              RESULTS
+            </button>
+          ) : (
+            <button 
+              onClick={() => setMainView('events')} 
+              style={{ 
+                background: 'transparent',
+                color: 'white',
+                border: '1px solid #a3e635',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              EVENTS
+            </button>
+          )}
         </div>
         
         <header className="header">
@@ -158,6 +208,51 @@ function App() {
         </div>
       </div>
 
+      {mainView === 'events' && (
+        <div className="content">
+          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#a3e635' }}>Upcoming Events</h2>
+          <div className="fixtures-list">
+            {upcomingEvents.length > 0 ? upcomingEvents.map((ev, i) => (
+              <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`}}>
+                <div style={{ padding: '15px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
+                    {ev.logoBase64 && (
+                      <img src={ev.logoBase64} alt={ev.name} style={{ width: '60px', height: '60px', objectFit: 'contain', borderRadius: '8px', background: 'rgba(255,255,255,0.1)' }} />
+                    )}
+                    <h3 style={{ margin: '0', fontSize: '1.2em', color: 'white' }}>{ev.name}</h3>
+                  </div>
+                  <div style={{ color: '#a1a1aa', marginBottom: '5px' }}>📅 {ev.date}</div>
+                  <div style={{ color: '#a1a1aa', marginBottom: '10px' }}>📍 {ev.location}</div>
+                  {ev.description && <p style={{ color: '#cbd5e1', fontSize: '0.9em', lineHeight: '1.4' }}>{ev.description}</p>}
+                  {ev.link && (
+                    <a 
+                      href={ev.link} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      style={{
+                        display: 'inline-block',
+                        marginTop: '10px',
+                        background: '#3b82f6',
+                        color: 'white',
+                        padding: '8px 15px',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        fontWeight: 'bold',
+                        fontSize: '0.9em'
+                      }}
+                    >
+                      Register / Details
+                    </a>
+                  )}
+                </div>
+              </div>
+            )) : <p style={{textAlign: 'center', color: '#a1a1aa', padding: '40px'}}>No upcoming events.</p>}
+          </div>
+        </div>
+      )}
+
+      {mainView === 'results' && (
+        <>
       <div className="card" style={{padding: '15px 20px', marginBottom: '25px'}}>
         <div className="card-label">SELECT EVENT</div>
         <div className="select-wrapper" style={{marginBottom: '20px'}}>
@@ -307,6 +402,8 @@ function App() {
         )}
       </div>
 
+        </>
+      )}
       <div className="built-by">
         <Heart size={14} color="#a3e635" fill="#a3e635" /> BUILT FOR THE PICKLEBALL COMMUNITY
       </div>
