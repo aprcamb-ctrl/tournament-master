@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import { Calendar, Trophy, GitFork, Heart } from 'lucide-react'
+import PullToRefresh from 'react-simple-pull-to-refresh';
+
 
 const CrossedPaddlesIcon = ({ size = 42, className = "" }) => (
   <svg 
@@ -157,7 +159,14 @@ function App() {
   const titleStart = splitTitle.slice(0, Math.ceil(splitTitle.length/2)).join(' ');
   const titleEnd = splitTitle.slice(Math.ceil(splitTitle.length/2)).join(' ');
 
+
+  const handleRefresh = async () => {
+    await fetchTournamentState();
+    await fetchUpcomingEvents();
+  };
+
   return (
+    <PullToRefresh onRefresh={handleRefresh} pullingContent={''} refreshingContent={<div style={{textAlign: 'center', padding: '20px', color: '#a3e635'}}>Refreshing...</div>}>
     <div className="container">
       <div className="header-wrapper">
         <div className="logo-container" style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
@@ -610,6 +619,7 @@ function App() {
         <Heart size={14} color="#a3e635" fill="#a3e635" /> BUILT FOR THE PICKLEBALL COMMUNITY
       </div>
     </div>
+    </PullToRefresh>
   )
 }
 
