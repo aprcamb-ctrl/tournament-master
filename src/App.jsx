@@ -474,7 +474,7 @@ function App() {
               return dirs.filter(d => grouped[d]).map((d, dIdx) => (
                 <div key={dIdx} style={{marginBottom: '30px'}}>
                   <h3 style={{color: '#a3e635', borderBottom: '1px solid #334155', paddingBottom: '10px'}}>{d === 'East' ? 'Main Draw (East)' : d + ' Draw'}</h3>
-                  {grouped[d].map((m, i) => (
+                  {[...grouped[d]].reverse().map((m, i) => (
                     <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`, marginBottom: '15px'}}>
                       <div className="match-teams">
                         <div className="team left">
@@ -585,7 +585,7 @@ function App() {
               </div>
             )}
 
-            {catData.knockouts && catData.knockouts.length > 0 ? catData.knockouts.map((m, i) => (
+            {catData.knockouts && catData.knockouts.length > 0 ? [...catData.knockouts].reverse().map((m, i) => (
               <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`}}>
                 <div className="match-teams">
                   <div className="team left">
