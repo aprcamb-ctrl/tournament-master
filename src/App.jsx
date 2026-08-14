@@ -59,12 +59,14 @@ function App() {
   const [data, setData] = useState(DUMMY_DATA);
   const [mainView, setMainView] = useState('events');
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [selectedEventForEntries, setSelectedEventForEntries] = useState(null);
 
   const [activeTab, setActiveTab] = useState('fixtures'); // fixtures, standings, knockouts
   const [selectedTournament, setSelectedTournament] = useState(Object.keys(DUMMY_DATA.tournaments)[0]);
   const [selectedCategory, setSelectedCategory] = useState(Object.keys(DUMMY_DATA.tournaments[Object.keys(DUMMY_DATA.tournaments)[0]].categories)[0]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+  const isLive = mainView === 'results' && data?.last_sync_time && (Date.now() / 1000 - data.last_sync_time) < 12 * 60 * 60 && data?.last_active_tournament === selectedTournament;
 
   // Helper to safely extract available tournaments
   const getTournamentsList = (sourceData) => {
@@ -199,14 +201,104 @@ function App() {
           </div>
         </header>
 
-        <div className="live-indicator">
-          <div className="live-badge">
-            <div className="live-dot"></div>
-            LIVE
+        {isLive && (
+          <div className="live-indicator">
+            <div className="live-badge">
+              <div className="live-dot"></div>
+              LIVE
+            </div>
+            <div className="updated-text">UPDATED {lastUpdated}</div>
           </div>
-          <div className="updated-text">UPDATED {lastUpdated}</div>
-        </div>
+        )}
       </div>
+
+      
+      {mainView === 'entries' && selectedEventForEntries && (
+        <div className="content">
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+            <h2 style={{ margin: 0, color: '#a3e635' }}>{selectedEventForEntries.name} - Entries</h2>
+            <button 
+              onClick={() => {
+                setMainView('events');
+                setSelectedEventForEntries(null);
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.2)',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              &larr; Back to Events
+            </button>
+          </div>
+          
+          {(() => {
+            let entries = selectedEventForEntries.entries ? [...selectedEventForEntries.entries] : [];
+            if (entries.length === 0) return <p style={{color: 'white'}}>No entries found.</p>;
+            
+            const keys = Object.keys(entries[0]);
+            
+            // Auto-detect DUPR rating column to sort
+            const duprCol = keys.find(k => k.toLowerCase().includes('dupr rating'));
+            if (duprCol) {
+                entries.sort((a, b) => {
+                    const ratingA = parseFloat(a[duprCol]) || 0;
+                    const ratingB = parseFloat(b[duprCol]) || 0;
+                    return ratingB - ratingA;
+                });
+            }
+            
+            // Auto-detect grouping column
+
+            const groupKey = keys.find(k => k.toLowerCase().includes('division') || k.toLowerCase().includes('category') || k.toLowerCase().includes('event'));
+            
+            const groups = {};
+            if (groupKey) {
+              entries.forEach(e => {
+                const g = e[groupKey] || 'Other';
+                if (!groups[g]) groups[g] = [];
+                groups[g].push(e);
+              });
+            } else {
+              groups['All Entrants'] = entries;
+            }
+            
+            // Only show keys that have actual data across the group, excluding the groupKey if it exists
+            return Object.keys(groups).map((gName, idx) => {
+               const groupEntries = groups[gName];
+               const displayKeys = keys.filter(k => k !== groupKey);
+               return (
+                 <div key={idx} style={{marginBottom: '30px', background: 'rgba(30, 41, 59, 0.8)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)'}}>
+                   <h3 style={{color: 'white', borderBottom: '1px solid #334155', paddingBottom: '10px', marginTop: 0}}>{gName}</h3>
+                   <div style={{overflowX: 'auto'}}>
+                     <table style={{width: '100%', borderCollapse: 'collapse', marginTop: '15px'}}>
+                       <thead>
+                         <tr>
+                           {displayKeys.map((k, i) => (
+                             <th key={i} style={{textAlign: 'left', padding: '10px', color: '#94a3b8', borderBottom: '1px solid #334155'}}>{k}</th>
+                           ))}
+                         </tr>
+                       </thead>
+                       <tbody>
+                         {groupEntries.map((entry, eIdx) => (
+                           <tr key={eIdx} style={{background: eIdx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'}}>
+                             {displayKeys.map((k, i) => (
+                               <td key={i} style={{padding: '10px', color: '#f8fafc', borderBottom: '1px solid #334155'}}>{entry[k]}</td>
+                             ))}
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                   </div>
+                 </div>
+               );
+            });
+          })()}
+        </div>
+      )}
 
       {mainView === 'events' && (
         <div className="content">
@@ -243,6 +335,29 @@ function App() {
                     >
                       Register / Details
                     </a>
+                  )}
+                  {ev.entries && ev.entries.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setSelectedEventForEntries(ev);
+                        setMainView('entries');
+                      }}
+                      style={{
+                        display: 'inline-block',
+                        marginTop: '10px',
+                        marginLeft: ev.link ? '10px' : '0',
+                        background: '#10b981',
+                        color: 'white',
+                        padding: '8px 15px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.9em',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      View Entries &rarr;
+                    </button>
                   )}
                 </div>
               </div>
