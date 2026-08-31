@@ -286,10 +286,12 @@ function App() {
                // The user wants to ensure the columns shown are Name, DUPR Rating, Home Club
                // We will try to filter them if they exist
                const desiredColumns = [];
+               const noCol = displayKeys.find(k => k.toLowerCase() === 'no' || k.toLowerCase() === 'no.');
                const nameCol = displayKeys.find(k => k.toLowerCase() === 'name' || k.toLowerCase().includes('player'));
                const ratingCol = displayKeys.find(k => k.toLowerCase().includes('dupr rating'));
                const clubCol = displayKeys.find(k => k.toLowerCase().includes('home club') || k.toLowerCase().includes('club'));
                
+               if (noCol) desiredColumns.push(noCol);
                if (nameCol) desiredColumns.push(nameCol);
                if (ratingCol) desiredColumns.push(ratingCol);
                if (clubCol) desiredColumns.push(clubCol);
@@ -624,3 +626,4 @@ function App() {
 }
 
 export default App
+
