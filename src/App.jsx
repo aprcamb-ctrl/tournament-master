@@ -412,7 +412,7 @@ function App() {
           <div className="select-arrow">▼</div>
         </div>
 
-        <div className="card-label">SELECT CATEGORY</div>
+        <div className="card-label">{catData && catData.format_type === 'dupr' ? 'SELECT COURT NUMBER' : 'SELECT CATEGORY'}</div>
         <div className="select-wrapper">
           <select 
             value={selectedCategory} 
@@ -536,14 +536,27 @@ function App() {
             <div style={{overflowX: 'auto'}}>
               <table className="standings-table">
                 <thead>
-                  <tr>
-                    <th>Pos</th>
-                    <th>Team</th>
-                    <th>P</th>
-                    <th>W</th>
-                    <th>L</th>
-                    <th>PD</th>
-                  </tr>
+                  {catData.format_type === 'dupr' ? (
+                    <tr>
+                      <th>Pos</th>
+                      <th>Player</th>
+                      <th>P</th>
+                      <th>W</th>
+                      <th>L</th>
+                      <th>PF</th>
+                      <th>PA</th>
+                      <th>PD</th>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <th>Pos</th>
+                      <th>Team</th>
+                      <th>P</th>
+                      <th>W</th>
+                      <th>L</th>
+                      <th>PD</th>
+                    </tr>
+                  )}
                 </thead>
                 <tbody>
                   {catData.standings.map((s, i) => (
@@ -557,6 +570,12 @@ function App() {
                       <td>{s.p}</td>
                       <td style={{color: '#a3e635', fontWeight: 'bold'}}>{s.w}</td>
                       <td style={{color: '#f87171'}}>{s.l}</td>
+                      {catData.format_type === 'dupr' && (
+                        <>
+                          <td style={{color: '#38bdf8'}}>{s.pf}</td>
+                          <td style={{color: '#fb923c'}}>{s.pa}</td>
+                        </>
+                      )}
                       <td style={{fontWeight: 'bold'}}>{s.pd > 0 ? '+'+s.pd : s.pd}</td>
                     </tr>
                   ))}
