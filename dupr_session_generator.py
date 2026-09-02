@@ -70,6 +70,35 @@ def assign_players_to_courts(players, total_courts):
     if total_players == 0:
         return courts
         
+    has_courts = any(str(p.get('court', '')).strip() for p in players_sorted)
+    
+    if has_courts:
+        # Group players by their explicit court assignment
+        from collections import defaultdict
+        import re
+        
+        court_groups = defaultdict(list)
+        for p in players_sorted:
+            c_val = str(p.get('court', '')).strip()
+            if c_val:
+                m = re.search(r'\d+', c_val)
+                c_idx = int(m.group()) if m else c_val
+                court_groups[c_idx].append(p)
+            else:
+                court_groups['Unassigned'].append(p)
+                
+        # Sort courts by index
+        sorted_keys = sorted(court_groups.keys(), key=lambda x: int(x) if str(x).isdigit() else 999)
+        for c_key in sorted_keys:
+            c_players = court_groups[c_key]
+            courts.append({
+                "court_number": c_key,
+                "players": c_players,
+                "matches": generate_court_matches(c_players)
+            })
+        return courts
+
+    # Fallback to chunking logic if no explicit courts
     sizes = get_court_sizes(total_players)
     
     # If the exact 5/6 math doesn't work (e.g. 7 players), fallback to old logic
