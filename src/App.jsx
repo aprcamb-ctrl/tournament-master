@@ -252,16 +252,7 @@ function App() {
             if (entries.length === 0) return <p style={{color: 'white'}}>No entries found.</p>;
             
             const keys = Object.keys(entries[0]);
-            
-            // Auto-detect DUPR rating column to sort
-            const duprCol = keys.find(k => k.toLowerCase().includes('dupr rating'));
-            if (duprCol) {
-                entries.sort((a, b) => {
-                    const ratingA = parseFloat(a[duprCol]) || 0;
-                    const ratingB = parseFloat(b[duprCol]) || 0;
-                    return ratingB - ratingA;
-                });
-            }
+            // DUPR sorting removed to allow manual placing
             
             // Auto-detect grouping column
 
