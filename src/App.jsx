@@ -497,7 +497,7 @@ function App() {
 
         {activeTab === 'fixtures' && catData.format_type !== 'compass' && (
           <div className="fixtures-list">
-            {catData.matches.length > 0 ? [...catData.matches].reverse().map((m, i) => (
+            {catData.matches.length > 0 ? (catData.format_type === 'dupr' ? catData.matches : [...catData.matches].reverse()).map((m, i) => (
               <div className={`match-card fade-in-up ${i % 2 === 0 ? 'neon-alt' : 'neon-primary'}`} key={i} style={{animationDelay: `${i * 0.1}s`}}>
                 <div className="match-teams">
                   <div className="team left">
