@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import { Calendar, Trophy, GitFork, Heart } from 'lucide-react'
 import PullToRefresh from 'react-simple-pull-to-refresh';
+import { Analytics } from '@vercel/analytics/react';
 
 
 const CrossedPaddlesIcon = ({ size = 42, className = "" }) => (
@@ -632,10 +633,10 @@ function App() {
       <div className="built-by">
         <Heart size={14} color="#a3e635" fill="#a3e635" /> BUILT FOR THE PICKLEBALL COMMUNITY
       </div>
+      <Analytics />
     </div>
     </PullToRefresh>
   )
 }
 
 export default App
-
