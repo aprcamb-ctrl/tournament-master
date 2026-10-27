@@ -4,21 +4,19 @@ import { Play, Pause, RotateCcw, Plus, Minus, Clock, Users, Maximize2, Minimize2
 export default function SocialRunner({ sessionData }) {
   const [selectedRoundIdx, setSelectedRoundIdx] = useState(0);
   
-  // Timer state
-  const defaultMinutes = sessionData?.timer_minutes || 10;
-  const [timeLeft, setTimeLeft] = useState(defaultMinutes * 60);
+  // Timer state - ALWAYS 10 minutes default
+  const DEFAULT_TIMER_MINUTES = 10;
+  const [timeLeft, setTimeLeft] = useState(DEFAULT_TIMER_MINUTES * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const timerRef = useRef(null);
 
-  // Update timer default if session data changes
+  // When session updates, ensure timer remains on 10 minutes default
   useEffect(() => {
-    if (sessionData?.timer_minutes) {
-      setTimeLeft(sessionData.timer_minutes * 60);
-      setIsRunning(false);
-    }
-  }, [sessionData?.timer_minutes, sessionData?.updated_at]);
+    setTimeLeft(DEFAULT_TIMER_MINUTES * 60);
+    setIsRunning(false);
+  }, [sessionData?.updated_at]);
 
   // Timer interval countdown
   useEffect(() => {
@@ -77,7 +75,7 @@ export default function SocialRunner({ sessionData }) {
   
   const resetTimer = () => {
     setIsRunning(false);
-    setTimeLeft(defaultMinutes * 60);
+    setTimeLeft(DEFAULT_TIMER_MINUTES * 60);
   };
 
   const addMinutes = (mins = 1) => {
@@ -333,7 +331,7 @@ export default function SocialRunner({ sessionData }) {
 
           <button
             onClick={resetTimer}
-            title="Reset to default duration"
+            title="Reset to 10 minutes"
             style={{
               background: 'rgba(30, 41, 59, 0.9)',
               color: '#f8fafc',
