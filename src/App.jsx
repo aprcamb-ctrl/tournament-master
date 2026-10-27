@@ -1,3 +1,4 @@
+import SocialRunner from './components/SocialRunner';
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import { Calendar, Trophy, GitFork, Heart } from 'lucide-react'
@@ -62,6 +63,7 @@ function App() {
   const [mainView, setMainView] = useState('events');
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [selectedEventForEntries, setSelectedEventForEntries] = useState(null);
+  const [socialData, setSocialData] = useState(null);
 
   const [activeTab, setActiveTab] = useState('fixtures'); // fixtures, standings, knockouts
   const [selectedTournament, setSelectedTournament] = useState(Object.keys(DUMMY_DATA.tournaments)[0]);
@@ -78,6 +80,12 @@ function App() {
   useEffect(() => {
     fetchTournamentState();
     fetchUpcomingEvents();
+    fetchSocialSession();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('view') === 'social' || urlParams.get('social')) {
+      setMainView('social');
+    }
 
     // Subscribe to realtime changes
     const subscription = supabase
@@ -89,6 +97,8 @@ function App() {
             setLastUpdated(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
           } else if (payload.new.id === 2) {
             setUpcomingEvents(payload.new.data.events || []);
+          } else if (payload.new.id === 4) {
+            setSocialData(payload.new.data?.social_session || payload.new.data || null);
           }
         }
       })
@@ -98,6 +108,21 @@ function App() {
       supabase.removeChannel(subscription);
     }
   }, []);
+
+  const fetchSocialSession = async () => {
+    try {
+      const { data: row } = await supabase
+        .from('tournament_state')
+        .select('*')
+        .eq('id', 4)
+        .single();
+      if (row && row.data) {
+        setSocialData(row.data.social_session || row.data);
+      }
+    } catch (err) {
+      console.log('Failed to fetch social session:', err);
+    }
+  };
 
   const fetchUpcomingEvents = async () => {
     try {
@@ -163,6 +188,7 @@ function App() {
   const handleRefresh = async () => {
     await fetchTournamentState();
     await fetchUpcomingEvents();
+    await fetchSocialSession();
   };
 
   return (
@@ -205,14 +231,42 @@ function App() {
         
         <header className="header" style={{ flex: 2, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <img src="/favicon.png" alt="Tournament Master" style={{ height: '70px', objectFit: 'contain', borderRadius: '15px', marginBottom: '10px' }} />
-          <h1 className="title" style={{ marginTop: 0 }}>{titleStart} <span>{titleEnd}</span></h1>
+          <h1 className="title" style={{ marginTop: 0 }}>
+            {mainView === 'social' ? (
+              <>CLUB <span>SOCIAL</span></>
+            ) : (
+              <>{titleStart} <span>{titleEnd}</span></>
+            )}
+          </h1>
           <div className="subtitle">
-            LIVE FIXTURES <span>•</span> STANDINGS <span>•</span> KNOCKOUTS
+            {mainView === 'social' ? (
+              <>LIVE FIXTURES • TIMERS • COURT ASSIGNMENTS</>
+            ) : (
+              <>LIVE FIXTURES • STANDINGS • KNOCKOUTS</>
+            )}
           </div>
         </header>
 
-        <div className="right-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '20px', flex: 1 }}>
-          {isLive && (
+        <div className="right-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '14px', flex: 1 }}>
+          <button 
+            onClick={() => setMainView(mainView === 'social' ? 'events' : 'social')}
+            style={{ 
+              background: mainView === 'social' ? '#a3e635' : 'transparent',
+              color: mainView === 'social' ? '#0f172a' : 'white',
+              border: '1px solid #a3e635',
+              padding: '8px 18px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              letterSpacing: '0.05em',
+              boxShadow: mainView === 'social' ? '0 0 15px rgba(163, 230, 53, 0.4)' : 'none',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {mainView === 'social' ? 'TOURNAMENTS' : 'SOCIALS'}
+          </button>
+
+          {isLive && mainView !== 'social' && (
             <div className="live-indicator" style={{ margin: 0 }}>
               <div className="live-badge">
                 <div className="live-dot"></div>
@@ -320,6 +374,12 @@ function App() {
                );
             });
           })()}
+        </div>
+      )}
+
+            {mainView === 'social' && (
+        <div className="content">
+          <SocialRunner sessionData={socialData} />
         </div>
       )}
 
