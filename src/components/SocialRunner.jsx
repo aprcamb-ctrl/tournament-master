@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Plus, Clock, Users, Maximize2, Minimize2, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, Minus, Clock, Users, Maximize2, Minimize2, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function SocialRunner({ sessionData }) {
   const [selectedRoundIdx, setSelectedRoundIdx] = useState(0);
   
   // Timer state
-  const defaultMinutes = sessionData?.timer_minutes || 15;
+  const defaultMinutes = sessionData?.timer_minutes || 10;
   const [timeLeft, setTimeLeft] = useState(defaultMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -80,8 +80,12 @@ export default function SocialRunner({ sessionData }) {
     setTimeLeft(defaultMinutes * 60);
   };
 
-  const addOneMinute = () => {
-    setTimeLeft(prev => prev + 60);
+  const addMinutes = (mins = 1) => {
+    setTimeLeft(prev => prev + mins * 60);
+  };
+
+  const removeMinutes = (mins = 1) => {
+    setTimeLeft(prev => Math.max(0, prev - mins * 60));
   };
 
   const toggleFullscreen = () => {
@@ -205,17 +209,61 @@ export default function SocialRunner({ sessionData }) {
           Round Countdown
         </div>
 
-        {/* Digital Time Numbers */}
-        <div style={{
-          fontSize: '3.6rem',
-          fontWeight: 900,
-          fontFamily: 'monospace, system-ui',
-          letterSpacing: '2px',
-          color: isTimeUp ? '#ef4444' : isTimeCritical ? '#f59e0b' : '#38bdf8',
-          textShadow: isTimeUp ? '0 0 20px rgba(239, 68, 68, 0.7)' : '0 0 15px rgba(56, 189, 248, 0.5)',
-          margin: '2px 0 12px'
-        }}>
-          {formatTime(timeLeft)}
+        {/* Digital Time Numbers with - / + Stepper Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', margin: '4px 0 14px' }}>
+          <button
+            onClick={() => removeMinutes(1)}
+            disabled={timeLeft < 60}
+            title="Subtract 1 minute"
+            style={{
+              background: 'rgba(30, 41, 59, 0.8)',
+              color: '#f87171',
+              border: '1px solid rgba(248, 113, 113, 0.3)',
+              borderRadius: '50%',
+              width: '42px',
+              height: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: timeLeft < 60 ? 'not-allowed' : 'pointer',
+              opacity: timeLeft < 60 ? 0.4 : 1,
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Minus size={20} />
+          </button>
+
+          <div style={{
+            fontSize: '3.6rem',
+            fontWeight: 900,
+            fontFamily: 'monospace, system-ui',
+            letterSpacing: '2px',
+            color: isTimeUp ? '#ef4444' : isTimeCritical ? '#f59e0b' : '#38bdf8',
+            textShadow: isTimeUp ? '0 0 20px rgba(239, 68, 68, 0.7)' : '0 0 15px rgba(56, 189, 248, 0.5)',
+            userSelect: 'none'
+          }}>
+            {formatTime(timeLeft)}
+          </div>
+
+          <button
+            onClick={() => addMinutes(1)}
+            title="Add 1 minute"
+            style={{
+              background: 'rgba(30, 41, 59, 0.8)',
+              color: '#38bdf8',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              borderRadius: '50%',
+              width: '42px',
+              height: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Plus size={20} />
+          </button>
         </div>
 
         {/* Timer Control Buttons */}
@@ -242,6 +290,48 @@ export default function SocialRunner({ sessionData }) {
           </button>
 
           <button
+            onClick={() => removeMinutes(1)}
+            title="Subtract 1 minute"
+            disabled={timeLeft < 60}
+            style={{
+              background: 'rgba(30, 41, 59, 0.9)',
+              color: '#f87171',
+              border: '1px solid rgba(248, 113, 113, 0.4)',
+              padding: '10px 16px',
+              borderRadius: '25px',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              cursor: timeLeft < 60 ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              opacity: timeLeft < 60 ? 0.5 : 1
+            }}
+          >
+            <Minus size={16} /> 1 Min
+          </button>
+
+          <button
+            onClick={() => addMinutes(1)}
+            title="Add 1 minute"
+            style={{
+              background: 'rgba(30, 41, 59, 0.9)',
+              color: '#38bdf8',
+              border: '1px solid rgba(56, 189, 248, 0.4)',
+              padding: '10px 16px',
+              borderRadius: '25px',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <Plus size={16} /> 1 Min
+          </button>
+
+          <button
             onClick={resetTimer}
             title="Reset to default duration"
             style={{
@@ -262,26 +352,6 @@ export default function SocialRunner({ sessionData }) {
           </button>
 
           <button
-            onClick={addOneMinute}
-            title="Add 1 minute"
-            style={{
-              background: 'rgba(30, 41, 59, 0.9)',
-              color: '#38bdf8',
-              border: '1px solid rgba(56, 189, 248, 0.4)',
-              padding: '10px 16px',
-              borderRadius: '25px',
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            <Plus size={16} /> 1 Min
-          </button>
-
-          <button
             onClick={() => setSoundEnabled(!soundEnabled)}
             title={soundEnabled ? 'Mute buzzer sound' : 'Enable buzzer sound'}
             style={{
@@ -297,6 +367,33 @@ export default function SocialRunner({ sessionData }) {
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </button>
+        </div>
+
+        {/* Quick Presets */}
+        <div style={{ display: 'flex', gap: '8px', marginTop: '14px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px' }}>PRESETS:</span>
+          {[8, 10, 12, 15, 20].map(mins => (
+            <button
+              key={mins}
+              onClick={() => {
+                setIsRunning(false);
+                setTimeLeft(mins * 60);
+              }}
+              style={{
+                background: timeLeft === mins * 60 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(30, 41, 59, 0.6)',
+                color: timeLeft === mins * 60 ? '#38bdf8' : '#94a3b8',
+                border: timeLeft === mins * 60 ? '1px solid #38bdf8' : '1px solid #334155',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {mins}m
+            </button>
+          ))}
         </div>
       </div>
 
